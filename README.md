@@ -1,94 +1,111 @@
-Chronexus is an open-source incident reconstruction engine that ingests multi-modal data (video, metadata, location signals, structured logs) and converts it into a unified, queryable entity graph.
+Chronexus
+Multi-Modal Incident Reconstruction & Evidence Correlation Engine
 
-The system is designed to assist human analysts in reconstructing events by:
+Chronexus is an open-source, human-in-the-loop investigation support system designed to reconstruct incidents from fragmented, multi-modal data sources.
 
-Extracting entities from video and sensor streams
+It ingests video streams, metadata, structured logs, and sensor data, transforms them into normalized events, and builds a spatiotemporal entity graph to assist analysts in reconstructing timelines and identifying relationships between people, vehicles, locations, and events.
 
-Linking entities across time and space
-
-Scoring hypotheses using probabilistic reasoning
-
-Providing transparent, auditable evidence trails
-
-Chronexus does not automate accusations or decisions. It is a decision-support system designed to surface structured insights while preserving uncertainty and provenance.
+Chronexus does not automate accusations.
+It provides structured reasoning, confidence-weighted hypotheses, and transparent evidence linkage to support informed human decision-making.
 
 Core Capabilities
 
-Multi-camera video ingestion (RTSP / MP4)
+Real-time video ingestion and frame processing
 
-Object detection and multi-object tracking
+Multi-object detection and tracking (persons, vehicles, plates)
 
 Face and vehicle embedding extraction
 
-License plate recognition (LPR)
+License plate recognition (OCR)
 
-Geospatial normalization (WGS84)
+Unified event schema normalization
 
-Entity graph construction (Neo4j)
+Graph-based entity linking (Neo4j)
 
-Temporal consistency validation
+Spatiotemporal consistency validation
 
 Bayesian confidence scoring
 
-Interactive graph and timeline exploration
+Interactive timeline and graph exploration
 
-Immutable audit logs and evidence provenance tracking
+Evidence provenance and audit logging
 
-Architecture Overview
+System Architecture
 
-Chronexus follows a modular pipeline:
+Chronexus is structured as modular services:
 
-Data Ingestion
+Ingestion Layer – Connectors for video streams, logs, and structured metadata
 
-Feature Extraction
+Feature Extraction Layer – Detection, tracking, embeddings, OCR
 
-Event Normalization
+Event Normalization Engine – Converts raw outputs into a unified schema
 
-Graph Construction
+Entity Graph Layer – Graph database for relationship modeling
 
-Probabilistic Reasoning
+Reasoning Engine – Hypothesis scoring and temporal validation
 
-Analyst Interface
+Analyst Interface – Timeline, graph explorer, and evidence viewer
 
-Each module runs as an isolated service and communicates via event streams.
+All components are containerized and orchestrated using Docker.
 
-The system is designed to be:
+Technology Stack
 
-Extensible
+Python (FastAPI, async workers)
 
-Vendor-neutral
+Neo4j (graph database)
 
-Cloud-agnostic
+PostgreSQL + PostGIS (geospatial data)
 
-Fully open-source compatible
+Redis Streams (event queue)
+
+YOLOv8 / Detectron2 (object detection)
+
+InsightFace / FaceNet (face embeddings)
+
+PaddleOCR / OpenALPR (license plate recognition)
+
+React + TypeScript (frontend)
+
+Docker / Docker Compose
+
+All dependencies are open-source and free to use.
 
 Design Principles
 
-Human-in-the-loop by default
+Human-in-the-loop decision support
 
-Explicit uncertainty modeling
+Transparency over automation
 
-Transparent inference paths
+Confidence-weighted inference
 
-Minimal assumptions
+Modular, extensible architecture
 
-Reproducible pipelines
+Privacy-aware and audit-traceable
 
-Data provenance preserved at every stage
+Dataset-agnostic ingestion pipeline
 
-Intended Use Cases
+Use Cases
 
-Incident reconstruction
+Chronexus is designed as a general-purpose evidence correlation engine and can be applied to:
 
-Fraud investigation
+Insurance investigations
 
-Insurance claim analysis
+Corporate incident analysis
 
-Corporate security operations
+Campus or facility security
 
-Research in spatiotemporal reasoning systems
+Fraud detection workflows
 
-Not a Surveillance Platform
+Operational anomaly detection
 
-Chronexus is not designed for mass surveillance or automated criminal identification.
-It is a structured reasoning engine intended for controlled, legally compliant environments.
+The architecture is domain-flexible and not restricted to law enforcement contexts.
+
+Project Status
+
+This project is under active development.
+The current focus is building the ingestion pipeline, event normalization engine, and foundational entity graph.
+
+Disclaimer
+
+Chronexus is a research and infrastructure project intended for ethical, lawful, and privacy-compliant use only.
+It does not provide automated determinations of guilt or liability. All outputs require human review and validation.
