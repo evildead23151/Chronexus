@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Sentinel — Multi-modal spatiotemporal entity reasoning engine for incident reconstruction">
+    <title>Sentinel — Spatiotemporal Entity Reasoning Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1a2235;
+            --bg-card: #151d2e;
+            --bg-card-hover: #1c2740;
+            --bg-elevated: #1e293b;
+            --surface-glass: rgba(17, 24, 39, .8);
+            --border-subtle: rgba(148, 163, 184, .1);
+            --border-default: rgba(148, 163, 184, .15);
+            --border-strong: rgba(148, 163, 184, .25);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
+            --text-muted: #475569;
+            --accent-blue: #3b82f6;
+            --accent-blue-glow: rgba(59, 130, 246, .15);
+            --accent-cyan: #06b6d4;
+            --accent-cyan-glow: rgba(6, 182, 212, .15);
+            --accent-emerald: #10b981;
+            --accent-emerald-glow: rgba(16, 185, 129, .15);
+            --accent-amber: #f59e0b;
+            --accent-amber-glow: rgba(245, 158, 11, .15);
+            --accent-red: #ef4444;
+            --accent-red-glow: rgba(239, 68, 68, .15);
+            --accent-violet: #8b5cf6;
+            --accent-violet-glow: rgba(139, 92, 246, .15);
+            --layer-raw: #3b82f6;
+            --layer-derived: #8b5cf6;
+            --layer-inference: #06b6d4;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+            --transition-fast: 150ms cubic-bezier(.4, 0, .2, 1);
+            --transition-base: 250ms cubic-bezier(.4, 0, .2, 1);
+            --transition-slow: 400ms cubic-bezier(.4, 0, .2, 1);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-strong);
+            border-radius: var(--radius-full);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-tertiary);
+        }
+
+        /* ═══════ LAYOUT ═══════ */
+        .app {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            min-height: 100vh;
+        }
+
+        /* ─── Header ─── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .75rem 1.5rem;
+            background: var(--surface-glass);
+            backdrop-filter: blur(24px) saturate(1.2);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .header-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue), var(--accent-violet));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: .875rem;
+            color: #fff;
+            box-shadow: 0 0 24px rgba(6, 182, 212, .25);
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 24px rgba(6, 182, 212, .25);
+            }
+
+            50% {
+                box-shadow: 0 0 32px rgba(59, 130, 246, .35);
+            }
+        }
+
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -.03em;
+            background: linear-gradient(135deg, #fff, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            font-size: .625rem;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: .12em;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 4px;
+        }
+
+        .nav-btn {
+            padding: .5rem 1rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: .8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .nav-btn:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-color: var(--border-default);
+        }
+
+        .nav-btn.active {
+            background: var(--accent-blue-glow);
+            color: var(--accent-blue);
+            border-color: rgba(59, 130, 246, .3);
+        }
+
+        .nav-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: var(--accent-blue);
+            border-radius: var(--radius-full);
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .si {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .6875rem;
+            font-family: var(--font-mono);
+            color: var(--text-tertiary);
+        }
+
+        .sd {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .sd.on {
+            background: var(--accent-emerald);
+            box-shadow: 0 0 8px var(--accent-emerald);
+        }
+
+        .sd.demo {
+            background: var(--accent-amber);
+            box-shadow: 0 0 8px var(--accent-amber);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
+
+        /* ─── Main ─── */
+        .main {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .g4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .g2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .gw {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* ─── Stat Cards ─── */
+        .sc {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            transition: all var(--transition-base);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sc::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            opacity: 0;
+            transition: opacity var(--transition-base);
+        }
+
+        .sc:hover {
+            border-color: var(--border-default);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+        }
+
+        .sc:hover::before {
+            opacity: 1;
+        }
+
+        .sc.blue::before {
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+        }
+
+        .sc.violet::before {
+            background: linear-gradient(90deg, var(--accent-violet), var(--accent-blue));
+        }
+
+        .sc.emerald::before {
+            background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+        }
+
+        .sc.amber::before {
+            background: linear-gradient(90deg, var(--accent-amber), var(--accent-red));
+        }
+
+        .sl {
+            font-size: .6875rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-weight: 600;
+            margin-bottom: .5rem;
+        }
+
+        .sv {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            line-height: 1;
+            margin-bottom: .25rem;
+        }
+
+        .sd2 {
+            font-size: .6875rem;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+        }
+
+        /* ─── Panels ─── */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .ph {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .pt {
+            font-size: .9375rem;
+            font-weight: 700;
+            letter-spacing: -.01em;
+        }
+
+        .pb {
+            padding: 1rem 1.25rem;
+        }
+
+        /* ─── Timeline ─── */
+        .tl {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .tl::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--layer-raw), var(--layer-derived), var(--layer-inference));
+            opacity: .3;
+        }
+
+        .te {
+            position: relative;
+            padding: 1rem;
+            margin-bottom: .75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .te:hover {
+            border-color: var(--border-default);
+            background: var(--bg-card-hover);
+            transform: translateX(4px);
+        }
+
+        .te::before {
+            content: '';
+            position: absolute;
+            left: calc(-2rem + 10px);
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid;
+            background: var(--bg-primary);
+        }
+
+        .te.raw::before {
+            border-color: var(--layer-raw);
+            box-shadow: 0 0 10px var(--layer-raw);
+        }
+
+        .te.derived::before {
+            border-color: var(--layer-derived);
+            box-shadow: 0 0 10px var(--layer-derived);
+        }
+
+        .te.inference::before {
+            border-color: var(--layer-inference);
+            box-shadow: 0 0 10px var(--layer-inference);
+        }
+
+        .tm {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .tt {
+            font-family: var(--font-mono);
+            font-size: .6875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .ts2 {
+            font-size: .6875rem;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            background: var(--bg-elevated);
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-size: .6875rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            letter-spacing: .02em;
+        }
+
+        .tag.raw {
+            background: rgba(59, 130, 246, .12);
+            color: var(--layer-raw);
+        }
+
+        .tag.derived {
+            background: rgba(139, 92, 246, .12);
+            color: var(--layer-derived);
+        }
+
+        .tag.inference {
+            background: rgba(6, 182, 212, .12);
+            color: var(--layer-inference);
+        }
+
+        .tag.high {
+            background: var(--accent-emerald-glow);
+            color: var(--accent-emerald);
+        }
+
+        .tag.med {
+            background: var(--accent-amber-glow);
+            color: var(--accent-amber);
+        }
+
+        .tag.low {
+            background: var(--accent-red-glow);
+            color: var(--accent-red);
+        }
+
+        .tag.model {
+            background: rgba(148, 163, 184, .06);
+            color: var(--text-tertiary);
+        }
+
+        .tsum {
+            font-size: .8125rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .ttags {
+            display: flex;
+            gap: .5rem;
+            margin-top: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .cb {
+            height: 4px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-top: .5rem;
+        }
+
+        .cf {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width .5s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .cf.high {
+            background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+        }
+
+        .cf.med {
+            background: linear-gradient(90deg, var(--accent-amber), var(--accent-emerald));
+        }
+
+        .cf.low {
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-amber));
+        }
+
+        /* ─── Filters ─── */
+        .fg {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .fp {
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: .6875rem;
+            font-weight: 500;
+            border: 1px solid var(--border-default);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-family: var(--font-sans);
+        }
+
+        .fp:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .fp.active {
+            background: var(--accent-blue-glow);
+            color: var(--accent-blue);
+            border-color: rgba(59, 130, 246, .3);
+        }
+
+        /* ─── Buttons ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .5rem 1rem;
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-sans);
+            font-size: .6875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: #fff;
+            border-color: var(--accent-blue);
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            box-shadow: 0 0 20px rgba(59, 130, 246, .3);
+        }
+
+        /* ─── Graph ─── */
+        .gbox {
+            position: relative;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .gbox svg {
+            width: 100%;
+            height: 460px;
+        }
+
+        .gleg {
+            display: flex;
+            gap: 1rem;
+            padding: .75rem 1rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .li {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .6875rem;
+            color: var(--text-tertiary);
+        }
+
+        .ldot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* ─── Hypothesis ─── */
+        .hc {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: .75rem;
+            transition: all var(--transition-fast);
+        }
+
+        .hc:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 16px rgba(6, 182, 212, .12);
+        }
+
+        .sgrid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .5rem;
+        }
+
+        .si2 {
+            text-align: center;
+            padding: .5rem;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+        }
+
+        .slab {
+            font-size: .6875rem;
+            color: var(--text-tertiary);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .sval {
+            font-size: .9375rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        /* ─── Health ─── */
+        .hi {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .75rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            margin-bottom: .5rem;
+        }
+
+        .hl {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .hn {
+            font-size: .8125rem;
+            font-weight: 600;
+        }
+
+        .hd {
+            font-size: .6875rem;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+        }
+
+        /* ─── Audit ─── */
+        .at {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .at th {
+            padding: .5rem .75rem;
+            text-align: left;
+            font-size: .6875rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            border-bottom: 1px solid var(--border-default);
+        }
+
+        .at td {
+            padding: .5rem .75rem;
+            font-size: .6875rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-subtle);
+            font-family: var(--font-mono);
+        }
+
+        .at tr:hover td {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .af {
+            margin-top: 1rem;
+            padding: .75rem;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            font-size: .6875rem;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        /* ─── Pipeline ─── */
+        .ps {
+            padding: 1rem;
+            margin-bottom: .75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            border-left: 3px solid;
+        }
+
+        .ps.active {
+            background: rgba(16, 185, 129, .04);
+            border-color: rgba(16, 185, 129, .2);
+        }
+
+        .pst {
+            font-size: .8125rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .psd {
+            font-size: .6875rem;
+            color: var(--text-secondary);
+        }
+
+        /* ─── Data Model Flow ─── */
+        .mi {
+            margin-top: 1rem;
+            padding: .75rem;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .mit {
+            font-size: .6875rem;
+            color: var(--text-tertiary);
+            margin-bottom: .5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .fl {
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .fa {
+            color: var(--text-muted);
+            font-size: .75rem;
+        }
+
+        .disc {
+            padding: .75rem;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            border: 1px dashed var(--border-default);
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: .6875rem;
+            margin-top: .75rem;
+        }
+
+        /* ─── Animated entries ─── */
+        .te,
+        .sc,
+        .hc,
+        .hi {
+            animation: fadeSlideIn .4s ease-out both;
+        }
+
+        .te:nth-child(1) {
+            animation-delay: .05s;
+        }
+
+        .te:nth-child(2) {
+            animation-delay: .1s;
+        }
+
+        .te:nth-child(3) {
+            animation-delay: .15s;
+        }
+
+        .te:nth-child(4) {
+            animation-delay: .2s;
+        }
+
+        .te:nth-child(5) {
+            animation-delay: .25s;
+        }
+
+        .te:nth-child(6) {
+            animation-delay: .3s;
+        }
+
+        .te:nth-child(7) {
+            animation-delay: .35s;
+        }
+
+        .te:nth-child(8) {
+            animation-delay: .4s;
+        }
+
+        .sc:nth-child(1) {
+            animation-delay: .05s;
+        }
+
+        .sc:nth-child(2) {
+            animation-delay: .1s;
+        }
+
+        .sc:nth-child(3) {
+            animation-delay: .15s;
+        }
+
+        .sc:nth-child(4) {
+            animation-delay: .2s;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── Responsive ─── */
+        @media(max-width:1200px) {
+            .g4 {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .g2,
+            .gw {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:768px) {
+            .g4 {
+                grid-template-columns: 1fr
+            }
+
+            .header {
+                flex-wrap: wrap;
+                gap: .75rem
+            }
+
+            .header-nav {
+                order: 3;
+                width: 100%;
+                overflow-x: auto
+            }
+
+            .main {
+                padding: .75rem
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="header-logo">S</div>
+                <div>
+                    <div class="header-title">Sentinel</div>
+                    <div class="header-subtitle">Spatiotemporal Entity Reasoning Engine v1.0</div>
+                </div>
+            </div>
+            <nav class="header-nav" id="nav"></nav>
+            <div class="header-status">
+                <div class="si">
+                    <div class="sd demo"></div>DEMO MODE
+                </div>
+                <div class="si">
+                    <div class="sd on"></div>API
+                </div>
+                <div class="si">
+                    <div class="sd on"></div>pgvector
+                </div>
+                <div class="si">
+                    <div class="sd on"></div>Neo4j
+                </div>
+                <div class="si">
+                    <div class="sd on"></div>Redis
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN -->
+        <main class="main" id="content"></main>
+
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════
+        // SENTINEL UI — Zero dependencies, demo data
+        // ═══════════════════════════════════════════════════════════
+
+        const VIEWS = ['dashboard', 'timeline', 'graph', 'hypotheses', 'audit'];
+        let view = 'dashboard', layerFilter = null, selNode = null;
+
+        // ── DEMO DATA ──
+        const TL = [
+            { id: '1', l: 'raw', ty: 'frame', ts: '2026-02-26T10:15:00Z', src: 'cam-001', c: 1.0, sum: 'Raw frame captured — Main St & 5th Ave — 1920×1080 • SHA256 verified • provenance signed', mv: null },
+            { id: '2', l: 'derived', ty: 'detection', ts: '2026-02-26T10:15:00Z', src: 'cam-001', c: .92, sum: 'Person detected (92% conf) + white sedan (88%) + bus (76%) — 3 detections total', mv: 'yolov8n-8.3.0' },
+            { id: '3', l: 'derived', ty: 'plate_read', ts: '2026-02-26T10:17:30Z', src: 'cam-001', c: .87, sum: 'License plate ABC-1234 recognized on white sedan — edit distance 0 to registry', mv: 'paddleocr-2.8.0' },
+            { id: '4', l: 'derived', ty: 'face_embed', ts: '2026-02-26T10:22:00Z', src: 'cam-002', c: .78, sum: 'Face match (cosine similarity 0.78) with subject from cam-001 — above 0.70 threshold', mv: 'insightface-buffalo_l-0.7.3' },
+            { id: '5', l: 'raw', ty: 'phone_ping', ts: '2026-02-26T10:25:00Z', src: 'tower-42', c: 1.0, sum: 'Phone ping — cell tower 42, signal -72 dBm, accuracy ±150m radius', mv: null },
+            { id: '6', l: 'derived', ty: 'plate_read', ts: '2026-02-26T10:45:00Z', src: 'cam-003', c: .94, sum: 'Plate ABC-1234 confirmed on Highway I-95 Mile 42 — exact match, eastbound ~65 mph', mv: 'paddleocr-2.8.0' },
+            { id: '7', l: 'inference', ty: 'constraint', ts: '2026-02-26T10:50:00Z', src: 'reasoner-v1', c: .85, sum: 'Deterministic check PASSED: 28 min travel, ~18.2 mi = ~39 mph (within 80 mph limit)', mv: 'reasoner-deterministic-1.0' },
+            { id: '8', l: 'derived', ty: 'face_embed', ts: '2026-02-26T11:05:00Z', src: 'cam-002', c: .45, sum: 'Possible face match (0.45) — BELOW 0.70 threshold — occlusion detected — flagged for analyst review', mv: 'insightface-buffalo_l-0.7.3' },
+        ];
+
+        const NODES = [
+            { id: 'p1', lab: 'Unknown Subject A', ty: 'Person', mv: 'insightface-0.7.3', c: .72, ev: ['de-001', 'de-003', 'de-007'] },
+            { id: 'v1', lab: 'White Sedan ABC-1234', ty: 'Vehicle', mv: 'paddleocr-2.8.0', c: .91, ev: ['de-002', 'de-005'] },
+            { id: 'c1', lab: 'Main St & 5th', ty: 'Camera', mv: null, c: 1, ev: [] },
+            { id: 'c2', lab: 'Park Entrance N', ty: 'Camera', mv: null, c: 1, ev: [] },
+            { id: 'c3', lab: 'Hwy I-95 Mi42', ty: 'Camera', mv: null, c: 1, ev: [] },
+            { id: 'pl1', lab: 'Central District', ty: 'Place', mv: null, c: 1, ev: [] },
+            { id: 'pl2', lab: 'City Park', ty: 'Place', mv: null, c: 1, ev: [] },
+            { id: 'ph1', lab: 'Phone Signal', ty: 'Phone', mv: null, c: .65, ev: ['re-004'] },
+        ];
+
+        const EDGES = [
+            { s: 'p1', t: 'c1', rel: 'APPEARED_IN', c: .92, r: 'YOLOv8 det + InsightFace embedding match', m: 'insightface-0.7.3' },
+            { s: 'p1', t: 'c2', rel: 'APPEARED_IN', c: .78, r: 'Face embedding cosine similarity 0.78', m: 'insightface-0.7.3' },
+            { s: 'v1', t: 'c1', rel: 'APPEARED_IN', c: .87, r: 'PaddleOCR plate read ABC-1234 (87% conf)', m: 'paddleocr-2.8.0' },
+            { s: 'v1', t: 'c3', rel: 'APPEARED_IN', c: .94, r: 'PaddleOCR plate exact match (94% conf)', m: 'paddleocr-2.8.0' },
+            { s: 'p1', t: 'v1', rel: 'NEAR', c: .75, r: 'Co-located at cam-001 within 150-second window', m: 'reasoner-det-1.0' },
+            { s: 'ph1', t: 'p1', rel: 'NEAR', c: .55, r: 'Phone ping 150m from last sighting, 3 min temporal overlap', m: 'reasoner-det-1.0' },
+            { s: 'c1', t: 'pl1', rel: 'LOCATED_AT', c: 1, r: 'Manual infrastructure record', m: 'manual' },
+            { s: 'c2', t: 'pl2', rel: 'LOCATED_AT', c: 1, r: 'Manual infrastructure record', m: 'manual' },
+        ];
+
+        const HYP = {
+            title: 'Subject A traveled from CBD to Highway via Park',
+            desc: 'Unknown Subject A observed at Main St (10:15), matched at Park Entrance (10:22, cosine 0.78). Associated vehicle ABC-1234 confirmed on I-95 (10:45). Travel time 28 min for ~18 mi is physically consistent at 39 mph.',
+            score: .73, stage: 'deterministic', status: 'active',
+            scores: { 'Temporal': .85, 'Spatial': .90, 'Face Match': .72, 'LPR Match': .91, 'Phone Corr.': .55, 'Combined': .73 }
+        };
+
+        const AUDIT = [
+            { id: 1, a: 'create', ac: 'system', res: 'camera', mv: null, d: '3 cameras initialized from config', ts: '09:00:00' },
+            { id: 2, a: 'ingest', ac: 'ingest-svc', res: 'raw_event', mv: null, d: '45 frames ingested, HMAC-signed', ts: '10:14:30' },
+            { id: 3, a: 'inference', ac: 'detector-v1', res: 'detection', mv: 'yolov8n-8.3.0', d: '45 frames → 12 detections (AGPL-isolated)', ts: '10:15:00' },
+            { id: 4, a: 'inference', ac: 'lpr-engine', res: 'plate_read', mv: 'paddleocr-2.8.0', d: 'ABC-1234 detected, confidence 0.87', ts: '10:17:30' },
+            { id: 5, a: 'inference', ac: 'face-embed', res: 'face_match', mv: 'insightface-0.7.3', d: '2 matches, avg cosine sim 0.78', ts: '10:20:00' },
+            { id: 6, a: 'resolve', ac: 'entity-res', res: 'entity', mv: null, d: 'Vehicle resolved: exact plate match', ts: '10:21:00' },
+            { id: 7, a: 'inference', ac: 'reasoner-v1', res: 'constraint', mv: 'deterministic-1.0', d: 'Speed check passed (39 mph < 80 mph)', ts: '10:50:00' },
+            { id: 8, a: 'create', ac: 'analyst-01', res: 'hypothesis', mv: null, d: 'Subject A travel hypothesis created', ts: '11:30:00' },
+        ];
+
+        const NC = { Person: '#3b82f6', Vehicle: '#f59e0b', Camera: '#10b981', Place: '#8b5cf6', Phone: '#06b6d4' };
+
+        // ── HELPERS ──
+        const cc = c => c >= .75 ? 'high' : c >= .5 ? 'med' : 'low';
+        const cclr = c => c >= .75 ? 'var(--accent-emerald)' : c >= .5 ? 'var(--accent-amber)' : 'var(--accent-red)';
+        const ft = ts => new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        // ── RENDER ──
+        function render() {
+            document.getElementById('nav').innerHTML = VIEWS.map(v =>
+                `<button class="nav-btn ${view === v ? 'active' : ''}" onclick="go('${v}')">${v[0].toUpperCase() + v.slice(1)}</button>`
+            ).join('');
+            const el = document.getElementById('content');
+            el.innerHTML = '';
+            ({ dashboard: rDash, timeline: rTL, graph: rGraph, hypotheses: rHyp, audit: rAudit })[view](el);
+        }
+
+        function tlE(e) {
+            return `<div class="te ${e.l}">
+    <div class="tm">
+      <span class="tt">${ft(e.ts)}</span>
+      <span class="ts2">${e.src}</span>
+      <span class="tag ${e.l}">${e.l.toUpperCase()}</span>
+      <span class="tag ${cc(e.c)}">${(e.c * 100).toFixed(0)}%</span>
+    </div>
+    <div class="tsum">${e.sum}</div>
+    <div class="ttags">
+      <span class="tag model">${e.ty}</span>
+      ${e.mv ? `<span class="tag model">⚙ ${e.mv}</span>` : ''}
+    </div>
+    <div class="cb"><div class="cf ${cc(e.c)}" style="width:${e.c * 100}%"></div></div>
+  </div>`;
+        }
+
+        // ── DASHBOARD ──
+        function rDash(el) {
+            el.innerHTML = `
+  <div class="g4">
+    <div class="sc blue"><div class="sl">Raw Events</div><div class="sv" style="color:var(--accent-blue)">2,847</div><div class="sd2">3 sources • immutable • HMAC-signed</div></div>
+    <div class="sc violet"><div class="sl">Derived Events</div><div class="sv" style="color:var(--accent-violet)">1,203</div><div class="sd2">4 models • versioned • pgvector stored</div></div>
+    <div class="sc emerald"><div class="sl">Resolved Entities</div><div class="sv" style="color:var(--accent-emerald)">47</div><div class="sd2">12 persons • 8 vehicles • 5-stage resolution</div></div>
+    <div class="sc amber"><div class="sl">Active Hypotheses</div><div class="sv" style="color:var(--accent-amber)">3</div><div class="sd2">deterministic stage • human-in-the-loop</div></div>
+  </div>
+  <div class="gw">
+    <div class="panel">
+      <div class="ph"><div class="pt">Recent Timeline</div><button class="btn" onclick="go('timeline')">View All →</button></div>
+      <div class="pb"><div class="tl">${TL.slice(0, 4).map(tlE).join('')}</div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="pt">System Health</div></div>
+      <div class="pb">
+        ${[
+                    { n: 'API Server (FastAPI)', v: '1.0.0', d: '< 200ms p95 • structured logging' },
+                    { n: 'PostgreSQL + pgvector', v: '16 + pgvector', d: 'ANN index • 512d embeddings' },
+                    { n: 'Neo4j Community', v: '5.x', d: 'Resolved entities only' },
+                    { n: 'Redis Streams', v: '7.x', d: 'Backpressure-aware queue' },
+                    { n: 'Prometheus', v: '2.51', d: '/metrics endpoint' },
+                    { n: 'Grafana', v: '10.4', d: 'Dashboard at :3000' },
+                ].map(s => `<div class="hi"><div class="hl"><div class="sd on"></div><div><div class="hn">${s.n}</div><div class="hd">${s.d}</div></div></div><span class="tag model">${s.v}</span></div>`).join('')}
+        <div class="mi">
+          <div class="mit">3-Layer Immutable Data Model</div>
+          <div class="fl">
+            <span class="tag raw">Layer 1: Raw Events</span><span class="fa">→</span>
+            <span class="tag derived">Layer 2: Derived Events</span><span class="fa">→</span>
+            <span class="tag inference">Layer 3: Inferences</span>
+          </div>
+          <div style="font-size:.6875rem;color:var(--text-tertiary);margin-top:.5rem;font-family:var(--font-mono)">
+            Immutable raw events • Model-versioned outputs • Deterministic-first reasoning • Full provenance chain
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+        }
+
+        // ── TIMELINE ──
+        function rTL(el) {
+            const f = layerFilter ? TL.filter(e => e.l === layerFilter) : TL;
+            el.innerHTML = `<div class="panel">
+    <div class="ph">
+      <div class="pt">Confidence-Weighted Timeline — 3-Layer Model</div>
+      <div class="fg">
+        <button class="fp ${!layerFilter ? 'active' : ''}" onclick="sf(null)">All (${TL.length})</button>
+        <button class="fp ${layerFilter === 'raw' ? 'active' : ''}" onclick="sf('raw')">Raw (${TL.filter(e => e.l === 'raw').length})</button>
+        <button class="fp ${layerFilter === 'derived' ? 'active' : ''}" onclick="sf('derived')">Derived (${TL.filter(e => e.l === 'derived').length})</button>
+        <button class="fp ${layerFilter === 'inference' ? 'active' : ''}" onclick="sf('inference')">Inference (${TL.filter(e => e.l === 'inference').length})</button>
+      </div>
+    </div>
+    <div class="pb"><div class="tl">${f.map(tlE).join('')}</div></div>
+  </div>`;
+        }
+
+        // ── GRAPH ──
+        function rGraph(el) {
+            const pos = {
+                p1: { x: 350, y: 120 }, v1: { x: 350, y: 340 },
+                c1: { x: 140, y: 160 }, c2: { x: 560, y: 120 }, c3: { x: 560, y: 340 },
+                pl1: { x: 80, y: 300 }, pl2: { x: 620, y: 220 },
+                ph1: { x: 200, y: 60 }
+            };
+
+            let svg = `<svg viewBox="0 0 700 460">
+  <defs>
+    <filter id="gl"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="rgba(148,163,184,.3)"/></marker>
+  </defs>`;
+
+            // Edges
+            EDGES.forEach(e => {
+                const f = pos[e.s], t = pos[e.t]; if (!f || !t) return;
+                const hl = selNode === e.s || selNode === e.t;
+                const col = hl ? '#06b6d4' : 'rgba(148,163,184,.12)';
+                const w = hl ? 2.5 : 1;
+                const dash = e.c < .7 ? 'stroke-dasharray="5,5"' : '';
+                svg += `<line x1="${f.x}" y1="${f.y}" x2="${t.x}" y2="${t.y}" stroke="${col}" stroke-width="${w}" ${dash} marker-end="${hl ? '' : 'url(#arr)'}"/>`;
+                if (hl) {
+                    const mx = (f.x + t.x) / 2, my = (f.y + t.y) / 2;
+                    svg += `<rect x="${mx - 50}" y="${my - 16}" width="100" height="14" rx="4" fill="rgba(0,0,0,.6)"/>`;
+                    svg += `<text x="${mx}" y="${my - 6}" fill="#94a3b8" font-size="8" text-anchor="middle" font-family="'JetBrains Mono',monospace">${e.rel} ${(e.c * 100).toFixed(0)}%</text>`;
+                }
+            });
+
+            // Nodes
+            NODES.forEach(n => {
+                const p = pos[n.id]; if (!p) return;
+                const col = NC[n.ty] || '#64748b', sel = selNode === n.id, r = sel ? 24 : 17;
+                const op = selNode && !sel ? .25 : 1;
+                if (sel) {
+                    svg += `<circle cx="${p.x}" cy="${p.y}" r="${r + 10}" fill="none" stroke="${col}" stroke-width="1" opacity=".2" filter="url(#gl)"/>`;
+                    svg += `<circle cx="${p.x}" cy="${p.y}" r="${r + 5}" fill="none" stroke="${col}" stroke-width=".5" opacity=".15"/>`;
+                }
+                svg += `<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${col}" fill-opacity="${op * .65}" stroke="${sel ? '#fff' : col}" stroke-width="${sel ? 2.5 : 1}" style="cursor:pointer" onclick="sn('${n.id}')"/>`;
+                svg += `<text x="${p.x}" y="${p.y + 4}" fill="rgba(255,255,255,${op})" font-size="${sel ? 10 : 8}" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-weight="700">${n.ty[0]}</text>`;
+                svg += `<text x="${p.x}" y="${p.y + r + 14}" fill="${sel ? '#f1f5f9' : 'rgba(148,163,184,' + op + ')'}" font-size="${sel ? 10 : 9}" text-anchor="middle" font-family="'Inter',sans-serif" font-weight="${sel ? 700 : 400}">${n.lab}</text>`;
+                if (sel && n.c < 1) svg += `<text x="${p.x}" y="${p.y + r + 26}" fill="${cclr(n.c)}" font-size="8" text-anchor="middle" font-family="'JetBrains Mono',monospace">${(n.c * 100).toFixed(0)}% confidence</text>`;
+            });
+
+            svg += '</svg>';
+
+            let details = '';
+            if (selNode) {
+                const node = NODES.find(n => n.id === selNode);
+                const edges = EDGES.filter(e => e.s === selNode || e.t === selNode);
+                if (node) {
+                    details = `<div class="g2">
+        <div class="panel"><div class="ph"><div class="pt">Node: ${node.lab}</div></div><div class="pb">
+          <div style="margin-bottom:.75rem"><div class="sl">Type</div><span class="tag ${node.ty === 'Person' ? 'raw' : node.ty === 'Vehicle' ? 'derived' : 'inference'}">${node.ty}</span></div>
+          <div style="margin-bottom:.75rem"><div class="sl">Confidence</div><div style="font-size:1.5rem;font-weight:800;color:${cclr(node.c)}">${(node.c * 100).toFixed(0)}%</div><div class="cb"><div class="cf ${cc(node.c)}" style="width:${node.c * 100}%"></div></div></div>
+          ${node.mv ? `<div style="margin-bottom:.75rem"><div class="sl">Model Version</div><span class="tag model">⚙ ${node.mv}</span></div>` : ''}
+          <div><div class="sl">Evidence Trail (source events)</div><div style="font-family:var(--font-mono);font-size:.6875rem;color:var(--text-secondary)">${node.ev.length ? node.ev.join(' → ') : 'Infrastructure node (manual)'}</div></div>
+        </div></div>
+        <div class="panel"><div class="ph"><div class="pt">Connected Edges (${edges.length})</div></div><div class="pb">
+          ${edges.map(e => `<div class="hc">
+            <div style="display:flex;justify-content:space-between;margin-bottom:.5rem"><span class="tag inference">${e.rel}</span><span class="tag ${cc(e.c)}">${(e.c * 100).toFixed(0)}%</span></div>
+            <div style="font-size:.6875rem;color:var(--text-secondary);margin-bottom:4px"><strong>Reason:</strong> ${e.r}</div>
+            <div style="font-size:.6875rem;color:var(--text-tertiary);font-family:var(--font-mono)">created_by_model: ${e.m}</div>
+          </div>`).join('')}
+        </div></div>
+      </div>`;
+                }
+            }
+
+            el.innerHTML = `<div class="panel">
+    <div class="ph"><div class="pt">Entity Graph — Versioned Nodes & Edges with Provenance</div><button class="btn" onclick="sn(null)">Reset Selection</button></div>
+    <div class="gbox">${svg}</div>
+    <div class="gleg">${Object.entries(NC).map(([t, c]) => `<div class="li"><div class="ldot" style="background:${c}"></div>${t}</div>`).join('')}</div>
+  </div>${details}`;
+        }
+
+        // ── HYPOTHESES ──
+        function rHyp(el) {
+            el.innerHTML = `<div class="g2">
+    <div class="panel">
+      <div class="ph"><div class="pt">Hypotheses — Deterministic First</div><button class="btn btn-primary">+ New Hypothesis</button></div>
+      <div class="pb">
+        <div class="hc">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div style="font-size:.875rem;font-weight:700">${HYP.title}</div>
+            <span class="tag ${cc(HYP.score)}">${(HYP.score * 100).toFixed(0)}%</span>
+          </div>
+          <div style="font-size:.75rem;color:var(--text-secondary);line-height:1.6;margin:.75rem 0">${HYP.desc}</div>
+          <div class="ttags" style="margin-bottom:.75rem">
+            <span class="tag inference">Stage: ${HYP.stage}</span>
+            <span class="tag high">Status: ${HYP.status}</span>
+          </div>
+          <div class="cb" style="margin-bottom:1rem"><div class="cf ${cc(HYP.score)}" style="width:${HYP.score * 100}%"></div></div>
+          <div class="sgrid">${Object.entries(HYP.scores).map(([k, v]) => `<div class="si2"><span class="slab">${k}</span><span class="sval" style="color:${cclr(v)}">${(v * 100).toFixed(0)}%</span></div>`).join('')}</div>
+        </div>
+        <div class="disc">⚠ Hypotheses are ranked suggestions with full provenance — never automated accusations.<br>Human-in-the-loop required for all critical decisions.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="pt">Reasoning Pipeline</div></div>
+      <div class="pb">
+        ${[
+                    { s: 'Stage 1: Deterministic', d: 'Speed violation check • Temporal window consistency • Plate exact match • BBox overlap • Haversine distance', st: 'active', c: 'var(--accent-emerald)' },
+                    { s: 'Stage 2: Probabilistic', d: 'Bayesian belief update • Embedding ANN similarity (pgvector) • Sensor confidence fusion', st: 'sprint-3', c: 'var(--accent-amber)' },
+                    { s: 'Stage 3: Graph', d: 'Multi-hop shortest path (Neo4j) • Structural consistency • Cross-entity hypothesis scoring', st: 'sprint-4', c: 'var(--accent-violet)' },
+                ].map(s => `<div class="ps ${s.st === 'active' ? 'active' : ''}" style="border-left-color:${s.c}">
+          <div class="pst">${s.s}</div><div class="psd">${s.d}</div>
+          <span class="tag ${s.st === 'active' ? 'high' : 'model'}" style="margin-top:.5rem">${s.st}</span>
+        </div>`).join('')}
+        <div class="mi">
+          <div class="mit">Scoring Order</div>
+          <div style="font-size:.6875rem;color:var(--text-secondary);font-family:var(--font-mono);line-height:1.8">
+            1. Deterministic constraints eliminate impossible hypotheses<br>
+            2. Probabilistic scoring ranks remaining candidates<br>
+            3. Graph analysis validates structural consistency<br>
+            4. Human analyst reviews top-ranked hypotheses
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+        }
+
+        // ── AUDIT ──
+        function rAudit(el) {
+            el.innerHTML = `<div class="panel">
+    <div class="ph"><div class="pt">Audit Log — Append-Only, Immutable, HMAC-Signed</div><button class="btn">Export Evidence Package</button></div>
+    <div class="pb">
+      <table class="at"><thead><tr><th>ID</th><th>Time</th><th>Action</th><th>Actor</th><th>Resource</th><th>Model Version</th><th>Details</th></tr></thead><tbody>
+      ${AUDIT.map(e => `<tr>
+        <td>${e.id}</td><td>${e.ts}</td>
+        <td><span class="tag ${e.a === 'inference' ? 'derived' : e.a === 'resolve' ? 'inference' : 'raw'}">${e.a}</span></td>
+        <td>${e.ac}</td><td>${e.res}</td>
+        <td>${e.mv ? `<span class="tag model">${e.mv}</span>` : '—'}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${e.d}</td>
+      </tr>`).join('')}
+      </tbody></table>
+      <div class="af">
+        <span>Total entries: ${AUDIT.length}</span>
+        <span>UPDATE/DELETE triggers: blocked at DB level</span>
+        <span>HMAC provenance signing: enabled</span>
+        <span>Reproducibility mode: available</span>
+      </div>
+    </div>
+  </div>`;
+        }
+
+        // ── ACTIONS ──
+        function go(v) { view = v; render(); window.scrollTo(0, 0); }
+        function sf(f) { layerFilter = f; render(); }
+        function sn(id) { selNode = selNode === id ? null : id; render(); }
+
+        // ── INIT ──
+        render();
+    </script>
+</body>
+
+</html>

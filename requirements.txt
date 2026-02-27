@@ -1,0 +1,45 @@
+# ============================================================
+# Sentinel — Python Dependencies (Refined)
+# ============================================================
+
+# ─── Core Framework ──────────────────────────────────────────
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+pydantic==2.9.0
+pydantic-settings==2.5.0
+python-multipart==0.0.9
+
+# ─── Database ────────────────────────────────────────────────
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.35
+geoalchemy2==0.15.0
+pgvector==0.3.0            # pgvector for embedding ANN
+neo4j==5.25.0
+redis==5.1.0
+
+# ─── Observability ───────────────────────────────────────────
+prometheus-client==0.21.0
+structlog==24.4.0
+
+# ─── Computer Vision (install when GPU ready) ───────────────
+# IMPORTANT: YOLOv8 is AGPL-3.0 — MUST run in isolated container
+# ultralytics==8.3.0          # Detector — AGPL-3.0 (isolated)
+# insightface==0.7.3          # Face embeddings — MIT
+# paddleocr==2.8.0            # License plate OCR — Apache-2.0
+# onnxruntime==1.19.0         # ONNX inference — MIT
+
+# ─── Data Processing ────────────────────────────────────────
+numpy==1.26.4
+scipy==1.14.0
+Pillow==10.4.0
+opencv-python-headless==4.10.0.84
+
+# ─── Utilities ───────────────────────────────────────────────
+httpx==0.27.0
+python-dotenv==1.0.1
+orjson==3.10.7
+uuid6==2024.7.10
+
+# ─── Testing ─────────────────────────────────────────────────
+pytest==8.3.0
+pytest-asyncio==0.24.0

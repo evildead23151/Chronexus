@@ -1,0 +1,63 @@
+name: Sentinel CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install ruff mypy
+
+      - name: Lint Python
+        run: ruff check services/
+
+      - name: Type check
+        run: mypy services/api/ --ignore-missing-imports
+
+      - name: Run Python tests
+        run: pytest tests/ -v --tb=short
+        continue-on-error: true
+
+  ui-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install UI dependencies
+        working-directory: ui
+        run: npm ci
+
+      - name: Type check UI
+        working-directory: ui
+        run: npx tsc --noEmit
+
+      - name: Build UI
+        working-directory: ui
+        run: npm run build
+
+  docker-compose-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate docker-compose
+        run: docker compose config -q

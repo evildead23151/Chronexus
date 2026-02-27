@@ -1,0 +1,112 @@
+{
+    "registry_version": "1.0.0",
+    "models": {
+        "detector": {
+            "name": "yolov8n",
+            "version": "8.3.0",
+            "type": "detector",
+            "license": "AGPL-3.0",
+            "license_note": "MUST be isolated in separate container to prevent AGPL infection of server code",
+            "isolation": "docker-container",
+            "weights_hash": null,
+            "config": {
+                "confidence_threshold": 0.4,
+                "iou_threshold": 0.45,
+                "input_size": [
+                    640,
+                    640
+                ],
+                "classes": [
+                    "person",
+                    "car",
+                    "truck",
+                    "bus",
+                    "motorcycle",
+                    "bicycle"
+                ]
+            },
+            "performance_metrics": {
+                "mAP_50": null,
+                "mAP_50_95": null,
+                "inference_ms_gpu": null,
+                "inference_ms_cpu": null
+            },
+            "alternatives_mit": [
+                "RT-DETR (Apache-2.0)",
+                "DAMO-YOLO (Apache-2.0)"
+            ]
+        },
+        "tracker": {
+            "name": "bytetrack",
+            "version": "0.3.0",
+            "type": "tracker",
+            "license": "MIT",
+            "isolation": "in-process",
+            "config": {
+                "track_thresh": 0.5,
+                "track_buffer": 30,
+                "match_thresh": 0.8
+            },
+            "performance_metrics": {
+                "MOTA": null,
+                "IDF1": null,
+                "id_switches": null
+            }
+        },
+        "face_embedder": {
+            "name": "insightface-buffalo_l",
+            "version": "0.7.3",
+            "type": "face_embed",
+            "license": "MIT",
+            "isolation": "in-process",
+            "config": {
+                "embedding_dim": 512,
+                "detection_threshold": 0.5,
+                "similarity_threshold": 0.7
+            },
+            "performance_metrics": {
+                "lfw_accuracy": null,
+                "inference_ms": null
+            }
+        },
+        "vehicle_embedder": {
+            "name": "resnet50-vehicle",
+            "version": "1.0.0",
+            "type": "vehicle_embed",
+            "license": "Apache-2.0",
+            "isolation": "in-process",
+            "config": {
+                "embedding_dim": 512,
+                "similarity_threshold": 0.75
+            }
+        },
+        "lpr": {
+            "name": "paddleocr",
+            "version": "2.8.0",
+            "type": "lpr",
+            "license": "Apache-2.0",
+            "isolation": "in-process",
+            "config": {
+                "lang": "en",
+                "det_model": "en_PP-OCRv4_det",
+                "rec_model": "en_PP-OCRv4_rec",
+                "confidence_threshold": 0.6
+            },
+            "performance_metrics": {
+                "character_error_rate": null,
+                "word_accuracy": null
+            }
+        }
+    },
+    "drift_monitoring": {
+        "enabled": true,
+        "eval_interval_hours": 24,
+        "metrics_tracked": [
+            "detection_mAP",
+            "face_match_accuracy",
+            "lpr_character_error_rate",
+            "id_switch_rate"
+        ],
+        "alert_threshold_pct_drop": 10
+    }
+}

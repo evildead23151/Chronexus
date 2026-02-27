@@ -1,0 +1,39 @@
+# Sentinel — Prometheus Configuration
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # ─── API Service ───────────────────────────────────────────
+  - job_name: 'sentinel-api'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8000']
+        labels:
+          service: 'api'
+
+  # ─── Detector Service ─────────────────────────────────────
+  - job_name: 'sentinel-detector'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8001']
+        labels:
+          service: 'detector'
+
+  # ─── Ingestion Service ────────────────────────────────────
+  - job_name: 'sentinel-ingest'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8002']
+        labels:
+          service: 'ingest'
+
+  # ─── Redis Exporter (future) ──────────────────────────────
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+
+  # ─── Postgres Exporter (future) ───────────────────────────
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']

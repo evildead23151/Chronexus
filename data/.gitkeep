@@ -1,0 +1,3 @@
+# Sentinel — Data directory
+# Frames, embeddings, and evidence packages stored here
+# Excluded from git via .gitignore

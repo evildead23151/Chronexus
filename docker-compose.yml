@@ -1,0 +1,100 @@
+version: "3.9"
+
+services:
+  # ─── PostgreSQL + PostGIS + pgvector ───────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: sentinel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sentinel
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel_dev_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/01_init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U sentinel -d sentinel" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Neo4j Community (resolved entities only) ──────────────
+  neo4j:
+    image: neo4j:5-community
+    container_name: sentinel-neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: neo4j/sentinel_dev_2026
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_memory_heap_max__size: 1G
+      NEO4J_dbms_memory_pagecache_size: 512M
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: [ "CMD-SHELL", "cypher-shell -u neo4j -p sentinel_dev_2026 'RETURN 1' || exit 1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ─── Redis (Streams + backpressure) ────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: sentinel-redis
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./infra/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Prometheus (metrics collection) ───────────────────────
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: sentinel-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+
+  # ─── Grafana (dashboards) ──────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: sentinel-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: sentinel_dev_2026
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  neo4j_data:
+  neo4j_logs:
+  redis_data:
+  prometheus_data:
+  grafana_data:

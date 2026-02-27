@@ -1,0 +1,56 @@
+# ─── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# ─── Node ────────────────────────────────────────────────────
+node_modules/
+ui/dist/
+.vite/
+
+# ─── Environment ─────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── Data ────────────────────────────────────────────────────
+data/frames/
+data/evidence/
+data/models/
+data/delhi_cams/*.mp4
+data/*_report.json
+*.weights
+*.pt
+*.onnx
+*.pb
+
+# ─── Docker ──────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ─── IDE ─────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ─── OS ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Logs ────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Testing ─────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
